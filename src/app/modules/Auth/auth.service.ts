@@ -2,9 +2,9 @@ import httpStatus from 'http-status';
 import { JwtPayload } from 'jsonwebtoken';
 import { AppError } from '../../errors/AppError';
 import { comparePassword, hashPassword } from '../../utils/passwordUtils';
-import { verifyToken } from '../../utils/tokenUtils';
+import { createToken } from '../../utils/tokenUtils';
 import { User } from '../User/user.model';
-import { TUserLogin, TUserRegister } from './auth.interface';
+import { TChangePassword, TUserLogin, TUserRegister } from './auth.interface';
 import config from '../../config';
 
 const register = async (payload: TUserRegister) => {
@@ -12,7 +12,16 @@ const register = async (payload: TUserRegister) => {
 
   const passwordHash = await hashPassword(password);
 
-  const user = await User.create({ ...payload, password: passwordHash });
+  const passwordHistory = {
+    password: passwordHash,
+    changedAt: Date.now(),
+  };
+
+  const user = await User.create({
+    ...payload,
+    password: passwordHash,
+    passwordHistory,
+  });
 
   const result = await User.findById(user._id).select('-__v');
   return result;
@@ -42,23 +51,28 @@ const login = async (payload: TUserLogin) => {
     email: user.email,
   };
 
-  const accessToken = verifyToken(
+  const accessToken = createToken(
     jwtPayload,
     config.jwt_access_secret as string,
     config.jwt_access_expires_in as string,
   );
+  const { _id, username, role, email } = user;
 
-  // delete password and unnecessary fields
-  const result = { ...user._doc };
-  delete result.password;
-  delete result.__v;
-  delete result.createdAt;
-  delete result.updatedAt;
+  // remove password from response
+  const result = {
+    _id,
+    username,
+    role,
+    email,
+  };
 
   return { user: result, token: accessToken };
 };
 
+const changePassword = async (payload: TChangePassword) => {};
+
 export const AuthServices = {
   register,
   login,
+  changePassword,
 };

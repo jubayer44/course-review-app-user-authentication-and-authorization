@@ -1,8 +1,24 @@
 import { Schema, model } from 'mongoose';
-import { TUser } from './user.interface';
-import { USER_ROLE } from './user.constant';
+import { userRole } from './user.constant';
+import { TPasswordHistory, TUserRegister } from '../Auth/auth.interface';
 
-const userSchema = new Schema<TUser>(
+const passwordHistorySchema = new Schema<TPasswordHistory>(
+  {
+    password: {
+      type: String,
+      required: true,
+    },
+    changedAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  {
+    _id: false,
+  },
+);
+
+const userSchema = new Schema<TUserRegister>(
   {
     username: {
       type: String,
@@ -21,8 +37,12 @@ const userSchema = new Schema<TUser>(
     },
     role: {
       type: String,
-      enum: USER_ROLE,
+      enum: userRole,
       default: 'user',
+    },
+    passwordHistory: {
+      type: [passwordHistorySchema],
+      select: 0,
     },
   },
   {
@@ -37,4 +57,4 @@ userSchema.methods.toJOSN = function () {
   return userObj;
 };
 
-export const User = model<TUser>('User', userSchema);
+export const User = model<TUserRegister>('User', userSchema);
