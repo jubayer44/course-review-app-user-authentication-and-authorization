@@ -8,8 +8,18 @@ import httpStatus from 'http-status';
 import filterQuery from '../../builder/queryFinder/filterQuery';
 import sortQuery from '../../builder/queryFinder/sortQuery';
 import paginateQuery from '../../builder/queryFinder/queryResponse';
+import { JwtPayload } from 'jsonwebtoken';
+import { User } from '../User/user.model';
 
-const createCourseIntoDb = async (payload: TCourse) => {
+const createCourseIntoDb = async (userData: JwtPayload, payload: TCourse) => {
+  const { _id, email } = userData;
+
+  const user = await User.findOne({ _id, email }).select('_id');
+
+  if (!user) {
+    throw new AppError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
   const timeDifference =
     new Date(payload.endDate).getTime() - new Date(payload.startDate).getTime();
 
@@ -19,7 +29,7 @@ const createCourseIntoDb = async (payload: TCourse) => {
 
   payload.durationInWeeks = weeksDifference;
 
-  const course = await Course.create(payload);
+  const course = await Course.create({ ...payload, createdBy: user._id });
   return course;
 };
 

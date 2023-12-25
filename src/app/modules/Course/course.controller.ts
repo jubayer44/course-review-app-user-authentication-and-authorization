@@ -6,7 +6,9 @@ import { AppError } from '../../errors/AppError';
 import httpStatus from 'http-status';
 
 const createCourse = catchAsyncFunction(async (req: Request, res: Response) => {
-  const result = await CourseServices.createCourseIntoDb(req.body);
+  const userData = req.user;
+
+  const result = await CourseServices.createCourseIntoDb(userData, req.body);
 
   successResponse(res, {
     success: true,

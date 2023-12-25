@@ -47,6 +47,7 @@ const userSchema = new Schema<TUserRegister>(
   },
   {
     timestamps: true,
+    versionKey: false,
   },
 );
 
