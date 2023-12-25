@@ -1,13 +1,12 @@
-import bcrypt from 'bcrypt';
-import config from '../config';
+import crypto from 'crypto';
 
-export const hashPassword = async (password: string) => {
-  return await bcrypt.hash(password, Number(config.bcrypt_salt_routs));
+export const hashPassword = (password: string) => {
+  return crypto.createHash('sha256').update(password).digest('hex');
 };
 
-export const comparePassword = async (
-  password: string,
-  hashedPassword: string,
-) => {
-  return await bcrypt.compare(password, hashedPassword);
+export const comparePassword = (password: string, hashedPassword: string) => {
+  if (hashPassword(password) === hashedPassword) {
+    return true;
+  }
+  return false;
 };
