@@ -6,3 +6,8 @@ export type TUserRegister = {
   password: string;
   role: TUserRole;
 };
+
+export type TUserLogin = {
+  username: string;
+  password: string;
+};

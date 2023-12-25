@@ -30,4 +30,11 @@ const userSchema = new Schema<TUser>(
   },
 );
 
+userSchema.methods.toJOSN = function () {
+  const user = this.user;
+  const userObj = user.toObject();
+  delete userObj.password;
+  return userObj;
+};
+
 export const User = model<TUser>('User', userSchema);
