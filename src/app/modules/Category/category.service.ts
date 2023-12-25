@@ -23,7 +23,7 @@ const createCategoryIntoDb = async (
 };
 
 const getAllCategoriesFromDb = async () => {
-  const category = await Category.find();
+  const category = await Category.find().populate('createdBy');
 
   return category;
 };

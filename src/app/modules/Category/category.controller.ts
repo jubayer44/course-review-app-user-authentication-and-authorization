@@ -30,7 +30,7 @@ const getAllCategories = catchAsyncFunction(
       success: true,
       statusCode: httpStatus.OK,
       message: 'Categories retrieved successfully',
-      data: result,
+      data: { categories: result },
     });
   },
 );
