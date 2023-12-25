@@ -54,7 +54,7 @@ const getCourseReviewsFromDb = async (courseId: string) => {
 };
 
 const getAllCoursesFromDb = async (query: Record<string, unknown>) => {
-  const filter = filterQuery(Course.find(), query);
+  const filter = filterQuery(Course.find(), query).populate('createdBy');
 
   const sorting = sortQuery(filter, query);
 

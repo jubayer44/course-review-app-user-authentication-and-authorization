@@ -50,12 +50,14 @@ const getAllCourse = catchAsyncFunction(async (req: Request, res: Response) => {
     throw new AppError(httpStatus.NOT_FOUND, 'Course not found');
   }
 
+  const courses = result?.result;
+
   successResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
     message: 'Courses retrieved successfully',
     meta: result?.meta,
-    data: result?.result,
+    data: { courses },
   });
 });
 
