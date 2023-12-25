@@ -6,7 +6,12 @@ import httpStatus from 'http-status';
 
 const createCategory = catchAsyncFunction(
   async (req: Request, res: Response) => {
-    const result = await CategoryServices.createCategoryIntoDb(req.body);
+    const userData = req.user;
+
+    const result = await CategoryServices.createCategoryIntoDb(
+      userData,
+      req.body,
+    );
 
     successResponse(res, {
       success: true,
