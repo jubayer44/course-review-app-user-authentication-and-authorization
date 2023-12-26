@@ -9,6 +9,8 @@ import handleDuplicateError from '../handleDuplicateError';
 import { AppError } from '../AppError';
 import handleAppError from '../handleAppError';
 import { TErrorResponse } from '../../interface/TErrorResponse';
+import { JsonWebTokenError } from 'jsonwebtoken';
+import handleJsonWebTokenError from '../jsonWebTokenError';
 
 const errProcessor = (err: any): TErrorResponse => {
   if (err instanceof ZodError) {
@@ -19,13 +21,15 @@ const errProcessor = (err: any): TErrorResponse => {
     return handleCastError(err);
   } else if (err?.code && err?.code === 11000) {
     return handleDuplicateError(err);
+  } else if (err instanceof JsonWebTokenError) {
+    return handleJsonWebTokenError();
   } else if (err instanceof AppError) {
     return handleAppError(err);
   } else {
     return {
       statusCode: httpStatus.BAD_REQUEST,
       message: 'Unknown Error',
-      errorMessage: '',
+      errorMessage: err?.message,
       errorDetails: err,
     };
   }

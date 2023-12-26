@@ -16,7 +16,7 @@ const checkAuth = (...roles: TUserRole[]) => {
       const token = req.headers.authorization;
 
       if (!token) {
-        throw new AppError(httpStatus.UNAUTHORIZED, 'You are not authorized');
+        throw new AppError(httpStatus.UNAUTHORIZED, 'Unauthorized Access');
       }
 
       const decodedToken = verifyToken(
@@ -29,7 +29,7 @@ const checkAuth = (...roles: TUserRole[]) => {
       const { _id, email, role } = decodedToken as JwtPayload;
 
       if (roles?.length && !roles.includes(role)) {
-        throw new AppError(httpStatus.FORBIDDEN, 'You are not authorized');
+        throw new AppError(httpStatus.UNAUTHORIZED, 'Unauthorized Access');
       }
 
       const user = await User.findOne({ _id, email });

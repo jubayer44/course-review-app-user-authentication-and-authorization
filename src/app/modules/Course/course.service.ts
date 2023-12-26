@@ -26,26 +26,6 @@ const createCourseIntoDb = async (userData: JwtPayload, payload: TCourse) => {
   return course;
 };
 
-// const getCourseReviewsFromDb = async (courseId: string) => {
-//   const result = await Course.aggregate([
-//     {
-//       $match: {
-//         _id: new Types.ObjectId(courseId),
-//       },
-//     },
-//     {
-//       $lookup: {
-//         from: 'reviews',
-//         localField: '_id',
-//         foreignField: 'courseId',
-//         as: 'reviews',
-//       },
-//     },
-//   ]);
-
-//   return result;
-// };
-
 const getCourseReviewsFromDb = async (courseId: string) => {
   const data = await Course.aggregate([
     {
@@ -146,6 +126,17 @@ const getBestCourseReviewsFromDb = async () => {
       },
     },
     {
+      $lookup: {
+        from: 'users',
+        localField: 'createdBy',
+        foreignField: '_id',
+        as: 'createdBy',
+      },
+    },
+    {
+      $unwind: '$createdBy',
+    },
+    {
       $addFields: {
         averageRating: {
           $avg: '$reviews.rating',
@@ -163,6 +154,10 @@ const getBestCourseReviewsFromDb = async () => {
     {
       $project: {
         reviews: 0,
+        'createdBy.password': 0,
+        'createdBy.passwordHistory': 0,
+        'createdBy.createdAt': 0,
+        'createdBy.updatedAt': 0,
       },
     },
     {

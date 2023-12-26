@@ -3,7 +3,7 @@ import { AppError } from './AppError';
 
 const handleAppError = (err: AppError): TErrorResponse => {
   return {
-    statusCode: err.statusCode || 500,
+    statusCode: err.statusCode,
     message: err.message,
     errorMessage: err.message,
     errorDetails: err,
