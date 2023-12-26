@@ -1,9 +1,6 @@
 import { z } from 'zod';
 
-const userRegisterRoleValidationSchema = z.enum(['user', 'admin'], {
-  required_error: 'Role is required',
-  invalid_type_error: 'Role must be a string',
-});
+const userRegisterRoleValidationSchema = z.enum(['user', 'admin']);
 
 const userRegisterValidationSchema = z.object({
   body: z.object({
@@ -31,7 +28,7 @@ const userRegisterValidationSchema = z.object({
         /[!@#$%^&*(),.?":{}|<>]/,
         'Password must contain at least one special character',
       ),
-    role: userRegisterRoleValidationSchema,
+    role: userRegisterRoleValidationSchema.optional(),
   }),
 });
 

@@ -8,7 +8,7 @@ export type TUserRegister = {
   username: string;
   email: string;
   password: string;
-  role: TUserRole;
+  role?: TUserRole;
   passwordHistory: TPasswordHistory[];
 };
 

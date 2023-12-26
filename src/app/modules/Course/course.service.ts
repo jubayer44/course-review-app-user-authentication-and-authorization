@@ -9,9 +9,17 @@ import { AppError } from '../../errors/AppError';
 import { TCourse } from './course.interface';
 import { Course } from './course.model';
 import { calculateCourseDuration } from './course.utils';
+import { Category } from '../Category/category.model';
 
 const createCourseIntoDb = async (userData: JwtPayload, payload: TCourse) => {
   const { _id } = userData;
+
+  const isCategoryExists = await Category.findById(payload?.categoryId);
+
+  // check category exists or not
+  if (!isCategoryExists) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Category not found');
+  }
 
   const timeDifference =
     new Date(payload.endDate).getTime() - new Date(payload.startDate).getTime();
@@ -27,6 +35,12 @@ const createCourseIntoDb = async (userData: JwtPayload, payload: TCourse) => {
 };
 
 const getCourseReviewsFromDb = async (courseId: string) => {
+  const isCourseExists = await Course.findById(courseId);
+
+  if (!isCourseExists) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Course not found');
+  }
+
   const data = await Course.aggregate([
     {
       $match: {
@@ -62,7 +76,10 @@ const getCourseReviewsFromDb = async (courseId: string) => {
       },
     },
     {
-      $unwind: '$reviews',
+      $unwind: {
+        path: '$reviews',
+        preserveNullAndEmptyArrays: true,
+      },
     },
     {
       $lookup: {
@@ -73,7 +90,10 @@ const getCourseReviewsFromDb = async (courseId: string) => {
       },
     },
     {
-      $unwind: '$reviews.createdBy',
+      $unwind: {
+        path: '$reviews.createdBy',
+        preserveNullAndEmptyArrays: true,
+      },
     },
     {
       $project: {
@@ -98,8 +118,8 @@ const getCourseReviewsFromDb = async (courseId: string) => {
   ]);
 
   const result = {
-    course: data[0].course,
-    reviews: data[0].reviews,
+    course: data[0]?.course,
+    reviews: data[0]?.reviews,
   };
 
   return result;

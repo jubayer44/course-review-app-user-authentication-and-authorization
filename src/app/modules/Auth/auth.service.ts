@@ -17,7 +17,7 @@ const register = async (payload: TUserRegister) => {
     password: passwordHash,
   });
 
-  const result = await User.findById(user._id).select('-__v');
+  const result = await User.findById(user._id);
   return result;
 };
 
