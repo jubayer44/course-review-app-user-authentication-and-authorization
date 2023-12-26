@@ -24,21 +24,11 @@ const getCourseReviews = catchAsyncFunction(
       req.params.courseId,
     );
 
-    if (result?.length < 1) {
-      throw new AppError(httpStatus.NOT_FOUND, 'Course not found');
-    }
-
-    const { reviews, ...remainingData } = result[0];
-    const newResult = {
-      course: remainingData,
-      reviews,
-    };
-
     successResponse(res, {
       success: true,
       statusCode: httpStatus.OK,
-      message: 'Course and Reviews retrieved successfully',
-      data: newResult,
+      message: 'Course with Reviews retrieved successfully',
+      data: result,
     });
   },
 );

@@ -16,7 +16,7 @@ const moduleRoutes = [
     route: CourseRoutes,
   },
   {
-    path: '/reviews',
+    path: '/',
     route: ReviewRoutes,
   },
   {

@@ -1,24 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import httpStatus from 'http-status';
+import { JwtPayload } from 'jsonwebtoken';
 import mongoose, { Types } from 'mongoose';
+import filterQuery from '../../builder/queryFinder/filterQuery';
+import paginateQuery from '../../builder/queryFinder/queryResponse';
+import sortQuery from '../../builder/queryFinder/sortQuery';
+import { AppError } from '../../errors/AppError';
 import { TCourse } from './course.interface';
 import { Course } from './course.model';
 import { calculateCourseDuration } from './course.utils';
-import { AppError } from '../../errors/AppError';
-import httpStatus from 'http-status';
-import filterQuery from '../../builder/queryFinder/filterQuery';
-import sortQuery from '../../builder/queryFinder/sortQuery';
-import paginateQuery from '../../builder/queryFinder/queryResponse';
-import { JwtPayload } from 'jsonwebtoken';
-import { User } from '../User/user.model';
 
 const createCourseIntoDb = async (userData: JwtPayload, payload: TCourse) => {
-  const { _id, email } = userData;
-
-  const user = await User.findOne({ _id, email }).select('_id');
-
-  if (!user) {
-    throw new AppError(httpStatus.NOT_FOUND, 'User not found');
-  }
+  const { _id } = userData;
 
   const timeDifference =
     new Date(payload.endDate).getTime() - new Date(payload.startDate).getTime();
@@ -29,17 +22,57 @@ const createCourseIntoDb = async (userData: JwtPayload, payload: TCourse) => {
 
   payload.durationInWeeks = weeksDifference;
 
-  const course = await Course.create({ ...payload, createdBy: user._id });
+  const course = await Course.create({ ...payload, createdBy: _id });
   return course;
 };
 
+// const getCourseReviewsFromDb = async (courseId: string) => {
+//   const result = await Course.aggregate([
+//     {
+//       $match: {
+//         _id: new Types.ObjectId(courseId),
+//       },
+//     },
+//     {
+//       $lookup: {
+//         from: 'reviews',
+//         localField: '_id',
+//         foreignField: 'courseId',
+//         as: 'reviews',
+//       },
+//     },
+//   ]);
+
+//   return result;
+// };
+
 const getCourseReviewsFromDb = async (courseId: string) => {
-  const result = await Course.aggregate([
+  const data = await Course.aggregate([
     {
       $match: {
         _id: new Types.ObjectId(courseId),
       },
     },
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'createdBy',
+        foreignField: '_id',
+        as: 'createdBy',
+      },
+    },
+    {
+      $unwind: '$createdBy',
+    },
+    {
+      $project: {
+        'createdBy.password': 0,
+        'createdBy.passwordHistory': 0,
+        'createdBy.createdAt': 0,
+        'createdBy.updatedAt': 0,
+      },
+    },
+
     {
       $lookup: {
         from: 'reviews',
@@ -48,7 +81,46 @@ const getCourseReviewsFromDb = async (courseId: string) => {
         as: 'reviews',
       },
     },
+    {
+      $unwind: '$reviews',
+    },
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'reviews.createdBy',
+        foreignField: '_id',
+        as: 'reviews.createdBy',
+      },
+    },
+    {
+      $unwind: '$reviews.createdBy',
+    },
+    {
+      $project: {
+        'reviews.createdBy.password': 0,
+        'reviews.createdBy.passwordHistory': 0,
+        'reviews.createdBy.createdAt': 0,
+        'reviews.createdBy.updatedAt': 0,
+      },
+    },
+    {
+      $group: {
+        _id: '$_id',
+        course: { $first: '$$ROOT' },
+        reviews: { $push: '$reviews' },
+      },
+    },
+    {
+      $project: {
+        'course.reviews': 0,
+      },
+    },
   ]);
+
+  const result = {
+    course: data[0].course,
+    reviews: data[0].reviews,
+  };
 
   return result;
 };
@@ -177,7 +249,9 @@ const updateCourseIntoDb = async (id: string, payload: Partial<TCourse>) => {
       }
     }
 
-    const result = await Course.findById(id).session(session);
+    const result = await Course.findById(id)
+      .populate('createdBy')
+      .session(session);
 
     await session.commitTransaction();
     await session.endSession();

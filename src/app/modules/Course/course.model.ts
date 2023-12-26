@@ -17,16 +17,21 @@ const tagSchema = new Schema<TTags>(
   },
 );
 
-const detailsSchema = new Schema({
-  level: {
-    type: String,
-    required: true,
+const detailsSchema = new Schema(
+  {
+    level: {
+      type: String,
+      required: true,
+    },
+    description: {
+      type: String,
+      required: true,
+    },
   },
-  description: {
-    type: String,
-    required: true,
+  {
+    _id: false,
   },
-});
+);
 
 const courseSchema = new Schema<TCourse>(
   {
@@ -78,6 +83,7 @@ const courseSchema = new Schema<TCourse>(
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: 'User',
+      versionKey: false,
     },
   },
   {

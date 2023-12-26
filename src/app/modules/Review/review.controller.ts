@@ -4,7 +4,9 @@ import { ReviewServices } from './review.service';
 import { successResponse } from '../../utils/successResponse';
 
 const createReview = catchAsyncFunction(async (req: Request, res: Response) => {
-  const result = await ReviewServices.createReviewIntoDb(req.body);
+  const userData = req.user;
+
+  const result = await ReviewServices.createReviewIntoDb(userData, req.body);
 
   successResponse(res, {
     success: true,
