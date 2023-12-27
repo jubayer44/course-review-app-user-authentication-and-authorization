@@ -195,16 +195,16 @@ const updateCourseIntoDb = async (id: string, payload: Partial<TCourse>) => {
     ...remainingData,
   };
 
+  const existingCourse = await Course.findById(id);
+
+  if (!existingCourse) {
+    throw new Error('Course not found');
+  }
+
   const session = await mongoose.startSession();
 
   try {
     session.startTransaction();
-
-    const existingCourse = await Course.findById(id).session(session);
-
-    if (!existingCourse) {
-      throw new Error('Course not found');
-    }
 
     // calculate course duration
     calculateCourseDuration(modifiedData, existingCourse);
