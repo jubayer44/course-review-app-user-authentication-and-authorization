@@ -21,14 +21,17 @@ const createCourseIntoDb = async (userData: JwtPayload, payload: TCourse) => {
     throw new AppError(httpStatus.NOT_FOUND, 'Category not found');
   }
 
-  const timeDifference =
-    new Date(payload.endDate).getTime() - new Date(payload.startDate).getTime();
+  if (!payload?.durationInWeeks) {
+    const timeDifference =
+      new Date(payload.endDate).getTime() -
+      new Date(payload.startDate).getTime();
 
-  const dayDifference = timeDifference / (1000 * 60 * 60 * 24);
+    const dayDifference = timeDifference / (1000 * 60 * 60 * 24);
 
-  const weeksDifference = Math.ceil(dayDifference / 7);
+    const weeksDifference = Math.ceil(dayDifference / 7);
 
-  payload.durationInWeeks = weeksDifference;
+    payload.durationInWeeks = weeksDifference;
+  }
 
   const course = await Course.create({ ...payload, createdBy: _id });
   return course;
@@ -207,14 +210,15 @@ const updateCourseIntoDb = async (id: string, payload: Partial<TCourse>) => {
     session.startTransaction();
 
     // calculate course duration
-    calculateCourseDuration(modifiedData, existingCourse);
+    if (!payload?.durationInWeeks) {
+      calculateCourseDuration(modifiedData, existingCourse);
+    }
 
     if (details && Object.keys(details).length > 0) {
       for (const [key, value] of Object.entries(details)) {
         modifiedData[`details.${key}`] = value;
       }
     }
-
     const updateData = await Course.findByIdAndUpdate(id, modifiedData, {
       new: true,
       runValidators: true,

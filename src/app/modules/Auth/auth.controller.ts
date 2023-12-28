@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import catchAsyncFunction from '../../utils/catchAsyncFunction';
 import { successResponse } from '../../utils/successResponse';
 import { AuthServices } from './auth.service';
+import httpStatus from 'http-status';
 
 const register = catchAsyncFunction(async (req: Request, res: Response) => {
   const result = await AuthServices.register(req.body);
@@ -18,7 +19,7 @@ const login = catchAsyncFunction(async (req: Request, res: Response) => {
   const result = await AuthServices.login(req.body);
   successResponse(res, {
     success: true,
-    statusCode: 200,
+    statusCode: httpStatus.OK,
     message: 'User login successfully',
     data: result,
   });
@@ -32,7 +33,7 @@ const changePassword = catchAsyncFunction(
 
     successResponse(res, {
       success: true,
-      statusCode: 200,
+      statusCode: httpStatus.OK,
       message: 'Password changed successfully',
       data: result,
     });
